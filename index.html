@@ -630,9 +630,10 @@ async function notionQuery(dbId, filter, sorts) {
 }
 
 async function notionQueryDirect(dbId) {
-  const url = `https://api.notion.com/v1/databases/${dbId}/query`;
+  const notionUrl = `https://api.notion.com/v1/databases/${dbId}/query`;
+  const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(notionUrl)}`;
   try {
-    const res = await fetch(url, {
+    const res = await fetch(proxyUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${TOKEN}`,
