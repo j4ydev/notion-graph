@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Life Optimization HQ — Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #f0ede8;
+    --muted: #666;
+    --muted2: #444;
+    --accent: #c8f060;
+    --accent2: #60a8f0;
+    --accent3: #f06080;
+    --accent4: #f0b060;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-display);
+    min-height: 100vh;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  /* TOKEN INPUT SCREEN */
+  #token-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: var(--bg);
+    background-image: radial-gradient(ellipse at 20% 50%, rgba(200,240,96,0.04) 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 20%, rgba(96,168,240,0.04) 0%, transparent 50%);
+  }
+
+  .token-card {
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 2.5rem;
+    background: var(--surface);
+  }
+
+  .token-label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    margin-bottom: 0.75rem;
+  }
+
+  .token-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+  }
+
+  .token-title span { color: var(--accent); }
+
+  .token-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+    font-family: var(--font-mono);
+  }
+
+  .token-input-wrap {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .token-input-wrap input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .token-input-wrap input:focus {
+    border-color: var(--accent);
+  }
+
+  .token-input-wrap input::placeholder { color: var(--muted2); }
+
+  .btn-load {
+    background: var(--accent);
+    color: #0a0a0a;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+
+  .btn-load:hover { opacity: 0.85; }
+  .btn-load:active { transform: scale(0.97); }
+
+  .token-hint {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    line-height: 1.7;
+  }
+
+  .token-hint a { color: var(--accent2); text-decoration: none; }
+
+  /* DASHBOARD */
+  #dashboard { display: none; padding: 2rem; max-width: 1100px; margin: 0 auto; }
+
+  .dash-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dash-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .dash-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .dash-title span { color: var(--accent); }
+
+  .dash-date {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  /* FILTER TABS */
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    background: transparent;
+    border: 1px solid var(--border2);
+    border-radius: 100px;
+    padding: 6px 16px;
+    color: var(--muted);
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #0a0a0a; }
+
+  /* METRIC CARDS */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .metric-card:hover { border-color: var(--border2); }
+
+  .metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--card-accent, var(--accent));
+    border-radius: 12px 12px 0 0;
+  }
+
+  .metric-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .metric-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .metric-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .metric-trend {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    margin-top: 6px;
+  }
+
+  .trend-up { color: var(--accent); }
+  .trend-down { color: var(--accent3); }
+  .trend-same { color: var(--muted); }
+
+  /* SECTION */
+  .section { margin-bottom: 2.5rem; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-family: var(--font-mono);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title::before {
+    content: '';
+    width: 3px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  /* CHART CARDS */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+  }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+
+  .chart-card-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+
+  .chart-wrap { position: relative; width: 100%; }
+
+  /* STATUS BADGES */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .badge-green { background: rgba(200,240,96,0.12); color: var(--accent); border: 1px solid rgba(200,240,96,0.2); }
+  .badge-red { background: rgba(240,96,128,0.12); color: var(--accent3); border: 1px solid rgba(240,96,128,0.2); }
+  .badge-yellow { background: rgba(240,176,96,0.12); color: var(--accent4); border: 1px solid rgba(240,176,96,0.2); }
+
+  /* STREAK TRACKER */
+  .streak-grid {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .streak-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-family: var(--font-mono);
+    color: var(--muted2);
+    cursor: default;
+    position: relative;
+    transition: transform 0.15s;
+  }
+
+  .streak-dot:hover { transform: scale(1.2); z-index: 2; }
+  .streak-dot.hit { background: rgba(200,240,96,0.2); border-color: var(--accent); color: var(--accent); }
+  .streak-dot.miss { background: rgba(240,96,128,0.1); border-color: rgba(240,96,128,0.2); }
+  .streak-dot.partial { background: rgba(240,176,96,0.15); border-color: var(--accent4); }
+
+  /* TABLE */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+  }
+
+  .data-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--surface2); }
+
+  /* LOADING */
+  #loading {
+    display: none;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+    background: var(--bg);
+  }
+
+  .loader-ring {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loader-text {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  /* ERROR */
+  #error-msg {
+    display: none;
+    background: rgba(240,96,128,0.08);
+    border: 1px solid rgba(240,96,128,0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--accent3);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    margin-top: 12px;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  /* SECTION VISIBILITY */
+  .section[data-category] { transition: opacity 0.2s; }
+  .section.hidden { display: none; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--muted2); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- TOKEN ENTRY -->
+<div id="token-screen">
+  <div class="token-card">
+    <div class="token-label">Life Optimization HQ</div>
+    <div class="token-title">Analytics<br><span>Dashboard</span></div>
+    <div class="token-sub">Enter your Notion Integration Token to load your data. Token is stored only in your browser session — never sent anywhere else.</div>
+    <div class="token-input-wrap">
+      <input type="password" id="token-input" placeholder="secret_xxxxxxxxxxxx..." />
+      <button class="btn-load" onclick="loadDashboard()">Load →</button>
+    </div>
+    <div id="error-msg"></div>
+    <div class="token-hint">
+      Get your token: <a href="https://app.notion.com/developers/connections" target="_blank">Personal access tokens</a> → Create token → copy the ntn_... value.<br><br>
+      Make sure your integration has access to the Weekly Metrics, Health Log, and Sales Outreach databases.
+    </div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div id="loading" style="display:none; min-height:100vh; align-items:center; justify-content:center; flex-direction:column; gap:1rem; background:var(--bg);">
+  <div class="loader-ring"></div>
+  <div class="loader-text" id="loading-text">Fetching your data...</div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="dash-header">
+    <div>
+      <div class="dash-eyebrow">Life Optimization HQ</div>
+      <div class="dash-title">Analytics<span>.</span></div>
+    </div>
+    <div>
+      <div class="dash-date" id="dash-date"></div>
+      <div style="margin-top:8px; text-align:right;">
+        <button class="filter-btn" style="font-size:11px; padding:4px 12px;" onclick="refreshData()">↻ Refresh</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTER TABS -->
+  <div class="filter-row" id="filter-row">
+    <button class="filter-btn active" onclick="filterSection('all', this)">All</button>
+    <button class="filter-btn" onclick="filterSection('sales', this)">Sales</button>
+    <button class="filter-btn" onclick="filterSection('health', this)">Health</button>
+    <button class="filter-btn" onclick="filterSection('finance', this)">Finance</button>
+  </div>
+
+  <!-- SUMMARY METRICS -->
+  <div class="metrics-grid" id="metrics-grid"></div>
+
+  <!-- SALES SECTION -->
+  <div class="section" data-category="sales" id="section-sales">
+    <div class="section-header">
+      <div class="section-title">Sales & Outreach</div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Weekly Outreach Sent vs Target</div>
+        <div class="chart-wrap" style="height:220px;"><canvas id="chart-outreach" role="img" aria-label="Weekly outreach sent vs target"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Proposals & Discovery Calls</div>
+        <div class="chart-wrap" style="height:220px;"><canvas id="chart-proposals" role="img" aria-label="Weekly proposals and calls"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINANCE SECTION -->
+  <div class="section" data-category="finance" id="section-finance">
+    <div class="section-header">
+      <div class="section-title">Pipeline & Revenue</div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card" style="grid-column: 1 / -1;">
+        <div class="chart-card-title">Active Pipeline Value (₹) — Weekly</div>
+        <div class="chart-wrap" style="height:200px;"><canvas id="chart-pipeline" role="img" aria-label="Pipeline value over weeks"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEALTH SECTION -->
+  <div class="section" data-category="health" id="section-health">
+    <div class="section-header">
+      <div class="section-title">Health & Body</div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Weight Trend (kg)</div>
+        <div class="chart-wrap" style="height:200px;"><canvas id="chart-weight" role="img" aria-label="Weight trend in kg"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Water Intake (litres/day)</div>
+        <div class="chart-wrap" style="height:200px;"><canvas id="chart-water" role="img" aria-label="Daily water intake"></canvas></div>
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <div class="chart-card">
+        <div class="chart-card-title">Workout streak — last 30 days</div>
+        <div class="streak-grid" id="streak-grid" style="margin-top:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HABITS SECTION -->
+  <div class="section" data-category="health" id="section-habits">
+    <div class="section-header">
+      <div class="section-title">Habit Compliance — This Week</div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Daily habit scorecard</div>
+        <div id="habit-table-wrap"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Habit compliance rate (%)</div>
+        <div class="chart-wrap" style="height:200px;"><canvas id="chart-habits" role="img" aria-label="Habit compliance rates"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEKLY LOG TABLE -->
+  <div class="section" data-category="sales" id="section-log">
+    <div class="section-header">
+      <div class="section-title">Weekly Log</div>
+    </div>
+    <div class="chart-card">
+      <div id="weekly-table-wrap"></div>
+    </div>
+  </div>
+
+  <div style="height: 3rem;"></div>
+</div>
+
+<script>
+const PROXY = 'https://api.allorigins.win/raw?url=';
+const DB_WEEKLY = 'f3905a16dd9b4c0799de51c0a46ba254';
+const DB_HEALTH = '5969f55fff8547c3a10403ad88c9af93';
+const DB_SALES  = '807e101c7f144d3c99b34a1340cbb00e';
+
+let TOKEN = '';
+let charts = {};
+let allWeekly = [], allHealth = [], allSales = [];
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.style.display = 'block';
+  el.textContent = msg;
+}
+
+function setLoading(msg) {
+  document.getElementById('loading-text').textContent = msg || 'Loading...';
+}
+
+async function notionQuery(dbId, filter, sorts) {
+  const body = {};
+  if (filter) body.filter = filter;
+  if (sorts) body.sorts = sorts;
+
+  const url = `https://api.notion.com/v1/databases/${dbId}/query`;
+  const encoded = encodeURIComponent(url);
+  const res = await fetch(`${PROXY}${encoded}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: JSON.stringify({
+      url,
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${TOKEN}`,
+        'Notion-Version': '2022-06-28',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    })
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+async function notionQueryDirect(dbId) {
+  const url = `https://api.notion.com/v1/databases/${dbId}/query`;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${TOKEN}`,
+        'Notion-Version': '2022-06-28',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ page_size: 50 })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || `HTTP ${res.status}`);
+    }
+    return res.json();
+  } catch(e) {
+    throw e;
+  }
+}
+
+function getProp(page, name, type) {
+  const props = page.properties;
+  if (!props || !props[name]) return null;
+  const p = props[name];
+  if (type === 'number') return p.number ?? null;
+  if (type === 'title') return p.title?.[0]?.plain_text ?? '';
+  if (type === 'select') return p.select?.name ?? null;
+  if (type === 'date') return p.date?.start ?? null;
+  if (type === 'rich_text') return p.rich_text?.[0]?.plain_text ?? '';
+  return null;
+}
+
+function parseWeekly(pages) {
+  return pages.map(p => ({
+    week: getProp(p, 'Week', 'title'),
+    weekStart: getProp(p, 'Week Starting', 'date'),
+    outreachSent: getProp(p, 'Outreach Sent', 'number') ?? 0,
+    outreachTarget: getProp(p, 'Outreach Target', 'number') ?? 50,
+    proposals: getProp(p, 'Proposals Sent', 'number') ?? 0,
+    calls: getProp(p, 'Discovery Calls Booked', 'number') ?? 0,
+    pipeline: getProp(p, 'Active Pipeline Value (₹)', 'number') ?? 0,
+    gymSessions: getProp(p, 'Gym Sessions', 'number') ?? 0,
+    linkedinPosts: getProp(p, 'LinkedIn Posts', 'number') ?? 0,
+    gymTarget: getProp(p, 'Gym Hit Target?', 'select'),
+    outreachHit: getProp(p, 'Outreach Hit Target?', 'select'),
+    status: getProp(p, 'Overall Status', 'select'),
+    biggestWin: getProp(p, 'Biggest Win This Week', 'rich_text'),
+  })).sort((a, b) => (a.weekStart || '').localeCompare(b.weekStart || ''));
+}
+
+function parseHealth(pages) {
+  return pages.map(p => ({
+    day: getProp(p, 'Day', 'title'),
+    date: getProp(p, 'Date', 'date'),
+    weight: getProp(p, 'Weight (kg)', 'number'),
+    water: getProp(p, 'Water (Litres)', 'number'),
+    workout: getProp(p, 'Workout Done?', 'select'),
+    protein: getProp(p, 'Protein Hit 120g?', 'select'),
+    breakfast: getProp(p, 'Breakfast?', 'select'),
+    sleep: getProp(p, 'Sleep by Midnight?', 'select'),
+    junk: getProp(p, 'Junk Food?', 'select'),
+    energy: getProp(p, 'Energy Level', 'select'),
+    workoutType: getProp(p, 'Workout Type', 'select'),
+    duration: getProp(p, 'Workout Duration (mins)', 'number'),
+  })).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+}
+
+const CHART_DEFAULTS = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+  scales: {
+    x: {
+      ticks: { color: '#555', font: { family: 'DM Mono', size: 10 }, maxRotation: 30 },
+      grid: { color: 'rgba(255,255,255,0.04)' },
+      border: { color: 'rgba(255,255,255,0.08)' }
+    },
+    y: {
+      ticks: { color: '#555', font: { family: 'DM Mono', size: 10 } },
+      grid: { color: 'rgba(255,255,255,0.04)' },
+      border: { color: 'rgba(255,255,255,0.08)' }
+    }
+  }
+};
+
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+function buildOutreachChart(data) {
+  destroyChart('outreach');
+  const labels = data.map(d => d.week || d.weekStart || '—');
+  const sent = data.map(d => d.outreachSent);
+  const target = data.map(d => d.outreachTarget);
+  const ctx = document.getElementById('chart-outreach');
+  charts['outreach'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Sent', data: sent, backgroundColor: 'rgba(200,240,96,0.7)', borderRadius: 4 },
+        { label: 'Target', data: target, type: 'line', borderColor: 'rgba(240,96,128,0.6)', borderDash: [4,3], pointRadius: 0, fill: false, tension: 0.3 }
+      ]
+    },
+    options: { ...CHART_DEFAULTS, scales: { ...CHART_DEFAULTS.scales, x: { ...CHART_DEFAULTS.scales.x, ticks: { ...CHART_DEFAULTS.scales.x.ticks, autoSkip: false, maxRotation: 45 } } } }
+  });
+}
+
+function buildProposalsChart(data) {
+  destroyChart('proposals');
+  const labels = data.map(d => d.week || d.weekStart || '—');
+  const proposals = data.map(d => d.proposals);
+  const calls = data.map(d => d.calls);
+  const ctx = document.getElementById('chart-proposals');
+  charts['proposals'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Proposals', data: proposals, backgroundColor: 'rgba(96,168,240,0.7)', borderRadius: 4 },
+        { label: 'Calls', data: calls, backgroundColor: 'rgba(240,176,96,0.7)', borderRadius: 4 }
+      ]
+    },
+    options: { ...CHART_DEFAULTS, scales: { ...CHART_DEFAULTS.scales, x: { ...CHART_DEFAULTS.scales.x, ticks: { ...CHART_DEFAULTS.scales.x.ticks, autoSkip: false, maxRotation: 45 } } } }
+  });
+}
+
+function buildPipelineChart(data) {
+  destroyChart('pipeline');
+  const labels = data.map(d => d.week || d.weekStart || '—');
+  const vals = data.map(d => d.pipeline);
+  const ctx = document.getElementById('chart-pipeline');
+  charts['pipeline'] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Pipeline ₹',
+        data: vals,
+        borderColor: '#c8f060',
+        backgroundColor: 'rgba(200,240,96,0.08)',
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: '#c8f060',
+        pointRadius: 4,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      scales: {
+        ...CHART_DEFAULTS.scales,
+        y: {
+          ...CHART_DEFAULTS.scales.y,
+          ticks: {
+            ...CHART_DEFAULTS.scales.y.ticks,
+            callback: v => '₹' + (v >= 100000 ? (v/100000).toFixed(1) + 'L' : v.toLocaleString('en-IN'))
+          }
+        }
+      }
+    }
+  });
+}
+
+function buildWeightChart(data) {
+  destroyChart('weight');
+  const filtered = data.filter(d => d.weight && d.date);
+  const labels = filtered.map(d => d.date.slice(5));
+  const vals = filtered.map(d => d.weight);
+  const ctx = document.getElementById('chart-weight');
+  charts['weight'] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Weight kg',
+        data: vals,
+        borderColor: '#f06080',
+        backgroundColor: 'rgba(240,96,128,0.08)',
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: '#f06080',
+        pointRadius: 3
+      }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      scales: {
+        ...CHART_DEFAULTS.scales,
+        y: {
+          ...CHART_DEFAULTS.scales.y,
+          ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => v + 'kg' }
+        }
+      }
+    }
+  });
+}
+
+function buildWaterChart(data) {
+  destroyChart('water');
+  const filtered = data.filter(d => d.water !== null && d.date);
+  const labels = filtered.map(d => d.date.slice(5));
+  const vals = filtered.map(d => d.water);
+  const ctx = document.getElementById('chart-water');
+  charts['water'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Water L',
+        data: vals,
+        backgroundColor: vals.map(v => v >= 2.5 ? 'rgba(96,168,240,0.8)' : 'rgba(96,168,240,0.35)'),
+        borderRadius: 3
+      }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      scales: {
+        ...CHART_DEFAULTS.scales,
+        y: {
+          ...CHART_DEFAULTS.scales.y,
+          ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => v + 'L' }
+        }
+      }
+    }
+  });
+}
+
+function buildHabitsChart(data) {
+  destroyChart('habits');
+  const last30 = data.slice(-30);
+  const total = last30.length || 1;
+  const pct = (key, good) => {
+    const count = last30.filter(d => d[key] && d[key].includes(good)).length;
+    return Math.round((count / total) * 100);
+  };
+
+  const labels = ['Workout', 'Protein', 'Breakfast', 'Sleep ≤12', 'No Junk'];
+  const values = [
+    pct('workout', '✅'),
+    pct('protein', '✅'),
+    pct('breakfast', '✅'),
+    pct('sleep', '✅'),
+    pct('junk', '✅')
+  ];
+
+  const ctx = document.getElementById('chart-habits');
+  charts['habits'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Compliance %',
+        data: values,
+        backgroundColor: values.map(v => v >= 70 ? 'rgba(200,240,96,0.75)' : v >= 40 ? 'rgba(240,176,96,0.75)' : 'rgba(240,96,128,0.75)'),
+        borderRadius: 4
+      }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      indexAxis: 'y',
+      scales: {
+        x: {
+          ...CHART_DEFAULTS.scales.x,
+          min: 0, max: 100,
+          ticks: { ...CHART_DEFAULTS.scales.x.ticks, callback: v => v + '%' }
+        },
+        y: { ...CHART_DEFAULTS.scales.y }
+      }
+    }
+  });
+}
+
+function buildStreakGrid(data) {
+  const grid = document.getElementById('streak-grid');
+  const last30 = data.slice(-30);
+  grid.innerHTML = '';
+  last30.forEach(d => {
+    const dot = document.createElement('div');
+    dot.className = 'streak-dot';
+    const w = d.workout || '';
+    if (w.includes('✅')) dot.classList.add('hit');
+    else if (w.includes('Walk')) dot.classList.add('partial');
+    else dot.classList.add('miss');
+    const dateStr = d.date ? d.date.slice(5) : '';
+    dot.title = `${dateStr} — ${d.workoutType || 'Rest'}`;
+    dot.textContent = dateStr.slice(3) || '';
+    grid.appendChild(dot);
+  });
+}
+
+function buildHabitTable(data) {
+  const wrap = document.getElementById('habit-table-wrap');
+  const last7 = data.slice(-7);
+  if (!last7.length) { wrap.innerHTML = '<div class="empty-state">No data yet. Start logging in Health Log.</div>'; return; }
+
+  let html = '<table class="data-table"><thead><tr><th>Date</th><th>Workout</th><th>Protein</th><th>Sleep</th><th>Breakfast</th><th>Diet</th></tr></thead><tbody>';
+  last7.forEach(d => {
+    const badge = (val, good, warn) => {
+      if (!val) return '<span style="color:var(--muted2)">—</span>';
+      if (val.includes(good)) return `<span class="badge badge-green">${good}</span>`;
+      if (warn && val.includes(warn)) return `<span class="badge badge-yellow">~</span>`;
+      return `<span class="badge badge-red">✗</span>`;
+    };
+    html += `<tr>
+      <td>${d.date || '—'}</td>
+      <td>${badge(d.workout, '✅', '🚶')}</td>
+      <td>${badge(d.protein, '✅', '⚠️')}</td>
+      <td>${badge(d.sleep, '✅', null)}</td>
+      <td>${badge(d.breakfast, '✅', null)}</td>
+      <td>${badge(d.junk, '✅', '⚠️')}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function buildWeeklyTable(data) {
+  const wrap = document.getElementById('weekly-table-wrap');
+  if (!data.length) { wrap.innerHTML = '<div class="empty-state">No weekly data yet. Fill in Weekly Metrics Tracker.</div>'; return; }
+  const recent = [...data].reverse().slice(0, 8);
+  let html = '<table class="data-table"><thead><tr><th>Week</th><th>Outreach</th><th>Proposals</th><th>Calls</th><th>Pipeline</th><th>Gym</th><th>Status</th></tr></thead><tbody>';
+  recent.forEach(d => {
+    const statusBadge = (s) => {
+      if (!s) return '—';
+      if (s.includes('On Track')) return '<span class="badge badge-green">On Track</span>';
+      if (s.includes('Slipping')) return '<span class="badge badge-yellow">Slipping</span>';
+      return '<span class="badge badge-red">Off Track</span>';
+    };
+    const pipeline = d.pipeline ? '₹' + (d.pipeline >= 100000 ? (d.pipeline/100000).toFixed(1) + 'L' : d.pipeline.toLocaleString('en-IN')) : '—';
+    html += `<tr>
+      <td>${d.week || d.weekStart || '—'}</td>
+      <td>${d.outreachSent}/${d.outreachTarget}</td>
+      <td>${d.proposals}</td>
+      <td>${d.calls}</td>
+      <td>${pipeline}</td>
+      <td>${d.gymSessions}</td>
+      <td>${statusBadge(d.status)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function buildMetricCards(weekly, health) {
+  const grid = document.getElementById('metrics-grid');
+  const lastWeek = weekly[weekly.length - 1] || {};
+  const prevWeek = weekly[weekly.length - 2] || {};
+  const last30H = health.slice(-30);
+  const latestWeight = [...health].reverse().find(h => h.weight);
+
+  const trend = (curr, prev) => {
+    if (!prev || curr === prev) return '<span class="metric-trend trend-same">— same</span>';
+    const diff = curr - prev;
+    const pct = prev ? Math.round(Math.abs(diff / prev * 100)) : 0;
+    return diff > 0
+      ? `<span class="metric-trend trend-up">↑ ${pct}% vs last week</span>`
+      : `<span class="metric-trend trend-down">↓ ${pct}% vs last week</span>`;
+  };
+
+  const gymHits = last30H.filter(h => h.workout && h.workout.includes('✅')).length;
+  const workoutPct = last30H.length ? Math.round(gymHits / last30H.length * 100) : 0;
+
+  const cards = [
+    { label: 'Outreach this week', value: lastWeek.outreachSent ?? '—', sub: `target: ${lastWeek.outreachTarget ?? 50}`, trend: trend(lastWeek.outreachSent, prevWeek.outreachSent), accent: '#c8f060', cat: 'sales' },
+    { label: 'Proposals sent', value: lastWeek.proposals ?? '—', sub: 'this week', trend: trend(lastWeek.proposals, prevWeek.proposals), accent: '#60a8f0', cat: 'sales' },
+    { label: 'Pipeline value', value: lastWeek.pipeline ? '₹' + (lastWeek.pipeline / 100000).toFixed(1) + 'L' : '—', sub: 'active pipeline', trend: trend(lastWeek.pipeline, prevWeek.pipeline), accent: '#f0b060', cat: 'finance' },
+    { label: 'Current weight', value: latestWeight ? latestWeight.weight + 'kg' : '—', sub: 'goal: ~75kg', accent: '#f06080', cat: 'health' },
+    { label: 'Workout rate', value: workoutPct + '%', sub: 'last 30 days', accent: '#c8f060', cat: 'health' },
+    { label: 'Discovery calls', value: lastWeek.calls ?? '—', sub: 'this week', accent: '#60a8f0', cat: 'sales' },
+  ];
+
+  grid.innerHTML = cards.map(c => `
+    <div class="metric-card" style="--card-accent: ${c.accent};" data-cat="${c.cat}">
+      <div class="metric-label">${c.label}</div>
+      <div class="metric-value">${c.value}</div>
+      <div class="metric-sub">${c.sub}</div>
+      ${c.trend || ''}
+    </div>
+  `).join('');
+}
+
+function filterSection(cat, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.section[data-category]').forEach(s => {
+    if (cat === 'all' || s.dataset.category === cat) s.classList.remove('hidden');
+    else s.classList.add('hidden');
+  });
+  document.querySelectorAll('.metric-card[data-cat]').forEach(c => {
+    if (cat === 'all' || c.dataset.cat === cat) c.style.display = '';
+    else c.style.display = 'none';
+  });
+}
+
+function renderAll(weekly, health) {
+  buildMetricCards(weekly, health);
+  buildOutreachChart(weekly);
+  buildProposalsChart(weekly);
+  buildPipelineChart(weekly);
+  buildWeightChart(health);
+  buildWaterChart(health);
+  buildHabitsChart(health);
+  buildStreakGrid(health);
+  buildHabitTable(health);
+  buildWeeklyTable(weekly);
+
+  document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+async function fetchAll() {
+  const [weeklyRes, healthRes] = await Promise.all([
+    notionQueryDirect(DB_WEEKLY),
+    notionQueryDirect(DB_HEALTH)
+  ]);
+  allWeekly = parseWeekly(weeklyRes.results || []);
+  allHealth = parseHealth(healthRes.results || []);
+}
+
+async function loadDashboard() {
+  const input = document.getElementById('token-input');
+  TOKEN = input.value.trim();
+  if (!TOKEN || (!TOKEN.startsWith('secret_') && !TOKEN.startsWith('ntn_'))) {
+    showError('Invalid token format. Should start with "secret_" or "ntn_".');
+    return;
+  }
+
+  document.getElementById('token-screen').style.display = 'none';
+  const loadingEl = document.getElementById('loading');
+  loadingEl.style.display = 'flex';
+
+  try {
+    setLoading('Connecting to Notion...');
+    await fetchAll();
+    setLoading('Building charts...');
+    loadingEl.style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    renderAll(allWeekly, allHealth);
+    sessionStorage.setItem('notion_token', TOKEN);
+  } catch(e) {
+    loadingEl.style.display = 'none';
+    document.getElementById('token-screen').style.display = 'flex';
+    showError('Failed to load: ' + e.message + '. Make sure your integration has access to the databases.');
+  }
+}
+
+async function refreshData() {
+  if (!TOKEN) return;
+  try {
+    await fetchAll();
+    renderAll(allWeekly, allHealth);
+  } catch(e) {
+    alert('Refresh failed: ' + e.message);
+  }
+}
+
+document.getElementById('token-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') loadDashboard();
+});
+
+const saved = sessionStorage.getItem('notion_token');
+if (saved) {
+  document.getElementById('token-input').value = saved;
+}
+</script>
+</body>
+</html>
